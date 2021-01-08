@@ -17,7 +17,7 @@ export default [
           icon: 'md-arrow-dropdown-circle',
           title: '内容管理'
         },
-        component: () => import('@/view/aticle-manage/content/content.vue')
+        component: () => import('@/view/aticle-manage/content/index.vue')
       },
       {
         path: 'article_label_page',
@@ -26,7 +26,7 @@ export default [
           icon: 'md-arrow-dropdown-circle',
           title: '标签管理'
         },
-        component: () => import('@/view/components/tables/tables.vue')
+        component: () => import('@/view/aticle-manage/tags/index.vue')
       }
     ]
   }

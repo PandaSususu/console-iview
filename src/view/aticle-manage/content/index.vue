@@ -18,6 +18,12 @@
         show-sizer
       />
     </Card>
+    <EditModel
+      :show="isShow"
+      :item="currentData"
+      @cancelModel="cancelModel"
+      @okModel="okModel"
+    ></EditModel>
   </div>
 </template>
 
@@ -25,14 +31,16 @@
 import moment from 'dayjs'
 
 import Tables from '_c/tables'
-import { getList, deletePost } from '@/api/post'
+import { getList, deletePost, updatePost } from '@/api/post'
+import EditModel from './editModel'
 
 export default {
-  name: 'tables_page',
+  name: 'content_table',
   components: {
-    Tables
+    Tables,
+    EditModel
   },
-  data () {
+  data() {
     return {
       columns: [
         {
@@ -56,7 +64,10 @@ export default {
           width: 150,
           align: 'center',
           render: (h, params) => {
-            return h('span', moment(params.row.created).format('YYYY-MM-DD HH:mm:ss'))
+            return h(
+              'span',
+              moment(params.row.created).format('YYYY-MM-DD HH:mm:ss')
+            )
           }
         },
         {
@@ -69,7 +80,7 @@ export default {
           }
         },
         {
-          title: '类型',
+          title: '分类',
           key: 'catalog',
           width: 60,
           align: 'center',
@@ -167,17 +178,21 @@ export default {
                   }
                 }
               }),
-              h('Icon', {
-                props: {
-                  type: 'md-trash',
-                  size: 20
-                },
-                on: {
-                  click: () => {
-                    this.handleRemove(params.row, params.index)
+              h(
+                'Icon',
+                {
+                  props: {
+                    type: 'md-trash',
+                    size: 20
+                  },
+                  on: {
+                    click: () => {
+                      this.handleRemove(params.row, params.index)
+                    }
                   }
-                }
-              }, 'Delete')
+                },
+                'Delete'
+              )
             ])
           }
         }
@@ -193,14 +208,17 @@ export default {
         discuss: '交流',
         share: '分享',
         news: '动态'
-      }
+      },
+      isShow: false,
+      currentData: {}
     }
   },
   methods: {
-    handleEdit (row, index) {
-      console.log(row, index)
+    handleEdit(row, index) {
+      this.currentData = { ...row }
+      this.isShow = true
     },
-    handleRemove (row, index) {
+    handleRemove(row, index) {
       const postIndex = (this.page - 1) * this.limit + (index + 1)
       this.$Modal.confirm({
         title: '您确定要删除该条帖子吗？',
@@ -224,29 +242,45 @@ export default {
         }
       })
     },
-    _getList () {
-      getList(
-        {
-          page: this.page - 1,
-          limit: this.limit
+    cancelModel() {
+      this.isShow = false
+      this.$Message.info('取消编辑')
+    },
+    okModel(item) {
+      updatePost(item).then(res => {
+        if (res.code === 10000) {
+          const index = this.tableData.findIndex(data => {
+            return item._id === data._id
+          })
+          this.tableData.splice(index, 1, item)
+          this.isShow = false
+          this.$Message.success(res.message)
+        } else {
+          this.$Message.error(res.message)
         }
-      ).then(res => {
+      })
+    },
+    _getList() {
+      getList({
+        page: this.page - 1,
+        limit: this.limit
+      }).then(res => {
         if (res.code === 10000) {
           this.tableData = res.data
           this.total = res.total
         }
       })
     },
-    pageChange (page) {
+    pageChange(page) {
       this.page = page
       this._getList()
     },
-    limitChange (limit) {
+    limitChange(limit) {
       this.limit = limit
       this._getList()
     }
   },
-  mounted () {
+  mounted() {
     this._getList()
   }
 }
