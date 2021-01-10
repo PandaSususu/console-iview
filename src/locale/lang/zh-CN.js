@@ -45,5 +45,7 @@ export default {
   tree_select_page: '树状下拉选择器',
   article_manage: '文章管理',
   article_content_page: '内容管理',
-  article_label_page: '标签管理'
+  article_label_page: '标签管理',
+  user_manage: '用户管理',
+  user_page: '用户管理'
 }

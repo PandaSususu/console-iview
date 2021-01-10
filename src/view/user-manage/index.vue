@@ -18,12 +18,12 @@
         show-sizer
       />
     </Card>
-    <EditModel
+    <Model
       :show="isShow"
-      :item="currentData"
+      :currentData="currentData"
       @cancelModel="cancelModel"
       @okModel="okModel"
-    ></EditModel>
+    ></Model>
   </div>
 </template>
 
@@ -31,14 +31,14 @@
 import moment from 'dayjs'
 
 import Tables from '_c/tables'
-import { getList, deletePost, updatePost } from '@/api/post'
-import EditModel from './editModel'
+import Model from './model'
+import { getUsers, deleteUser, updateUser } from '@/api/user'
 
 export default {
-  name: 'content_table',
+  name: 'user_table',
   components: {
     Tables,
-    EditModel
+    Model
   },
   data() {
     return {
@@ -53,15 +53,20 @@ export default {
           }
         },
         {
-          title: '标题',
-          key: 'title',
-          width: 300,
-          tooltip: true
+          title: '用户名',
+          key: 'name',
+          width: 100
         },
         {
-          title: '发帖时间',
+          title: '邮箱',
+          key: 'email',
+          width: 200,
+          align: 'center'
+        },
+        {
+          title: '注册时间',
           key: 'created',
-          width: 150,
+          width: 200,
           align: 'center',
           render: (h, params) => {
             return h(
@@ -71,89 +76,78 @@ export default {
           }
         },
         {
-          title: '作者',
-          key: 'user',
-          width: 100,
-          align: 'center',
-          render: (h, params) => {
-            return h('span', params.row.user.name)
-          }
-        },
-        {
-          title: '分类',
-          key: 'catalog',
-          width: 60,
-          align: 'center',
-          render: (h, params) => {
-            return h('span', this.catalogs[params.row.catalog])
-          }
-        },
-        {
           title: '积分',
-          key: 'fav',
+          key: 'favs',
           width: 60,
           align: 'center'
         },
         {
-          title: '结贴',
-          key: 'isEnd',
+          title: '性别',
+          key: 'gender',
           align: 'center',
-          width: 60,
+          width: 80,
           render: (h, params) => {
-            return h('span', params.row.isEnd === '0' ? '未结' : '已结 ')
+            return h(
+              'span',
+              params.row.gender
+                ? params.row.gender === '0'
+                  ? '男'
+                  : '女'
+                : '未设置'
+            )
           }
         },
         {
-          title: '阅读数',
-          key: 'reads',
-          width: 100,
-          align: 'center'
-        },
-        {
-          title: '评论数',
-          key: 'answer',
+          title: '角色',
+          key: 'access',
+          width: 200,
           align: 'center',
-          width: 100
+          render: (h, params) => {
+            return h('span', params.row.access.map(item => item).join('，'))
+          }
         },
         {
           title: '状态',
           key: 'status',
-          width: 70,
           align: 'center',
+          width: 80,
           render: (h, params) => {
             return h('Tag', {
               props: {
                 color: params.row.status === '0' ? 'success' : 'error'
               },
               domProps: {
-                innerHTML: params.row.status === '0' ? 'on' : 'off'
+                innerHTML: params.row.status === '0' ? '正常' : '异常'
               }
             })
           }
         },
         {
-          title: '置顶',
-          key: 'isTop',
-          width: 60,
-          align: 'center',
-          render: (h, params) => {
-            return h('Icon', {
-              props: {
-                type: params.row.isTop === '0' ? 'md-close' : 'md-checkmark',
-                color: params.row.isTop === '0' ? '#F79709' : '#19be6b',
-                size: 20
-              }
-            })
-          }
-        },
-        {
-          title: '标签',
-          key: 'tags',
+          title: '个性签名',
+          key: 'regmark',
           width: 200,
           align: 'center',
-          tooltip: true,
+          tooltip: true
+        },
+        {
+          title: '所在城市',
+          key: 'city',
+          width: 200,
+          align: 'center',
           render: (h, params) => {
-            return h('span', params.row.tags.map(item => item.name).join('，'))
+            return h('span', params.row.location.length ? params.row.location.join('/') : '未设置')
+          }
+        },
+        {
+          title: '会员',
+          key: 'isVip',
+          width: 100,
+          align: 'center',
+          render: (h, params) => {
+            return h(
+              'span',
+              parseInt(params.row.isVip) ? 'VIP ' + params.row.isVip : '非会员'
+            )
           }
         },
         {
@@ -201,14 +195,6 @@ export default {
       page: 1,
       limit: 10,
       total: 0,
-      catalogs: {
-        index: '全部',
-        ask: '提问',
-        advise: '建议',
-        discuss: '交流',
-        share: '分享',
-        news: '动态'
-      },
       isShow: false,
       currentData: {}
     }
@@ -219,12 +205,10 @@ export default {
       this.isShow = true
     },
     handleRemove(row, index) {
-      const postIndex = (this.page - 1) * this.limit + (index + 1)
       this.$Modal.confirm({
-        title: '您确定要删除该条帖子吗？',
-        content: `第${postIndex}条，“${row.title}”`,
+        title: `您确定要删除“${ row.name }”用户吗？`,
         onOk: () => {
-          deletePost({
+          deleteUser({
             id: row._id
           }).then(res => {
             if (res.code === 10000) {
@@ -246,13 +230,13 @@ export default {
       this.isShow = false
       this.$Message.info('取消编辑')
     },
-    okModel(item) {
-      updatePost(item).then(res => {
+    okModel(data) {
+      updateUser(data).then(res => {
         if (res.code === 10000) {
-          const index = this.tableData.findIndex(data => {
+          const index = this.tableData.findIndex(item => {
             return item._id === data._id
           })
-          this.tableData.splice(index, 1, item)
+          this.tableData.splice(index, 1, data)
           this.isShow = false
           this.$Message.success(res.message)
         } else {
@@ -261,7 +245,7 @@ export default {
       })
     },
     _getList() {
-      getList({
+      getUsers({
         page: this.page - 1,
         limit: this.limit
       }).then(res => {
