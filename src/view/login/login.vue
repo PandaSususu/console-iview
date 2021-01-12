@@ -29,10 +29,12 @@ export default {
     ]),
     handleSubmit (options) {
       this.handleLogin(options).then(res => {
-        if (res) {
+        if (res.code === 10000) {
           this.$router.push({
             name: this.$config.homeName
           })
+        } else {
+          this.$Message.error(res.message)
         }
         // this.getUserInfo().then(res => {
         //   console.log(res)

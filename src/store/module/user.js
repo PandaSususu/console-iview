@@ -80,9 +80,9 @@ export default {
             commit('setUserId', user._id)
             commit('setAccess', user.access)
             commit('setHasGetInfo', true)
-            resolve(true)
+            resolve(res)
           } else {
-            // this.$Message.error('This is an error tip');
+            resolve(res)
           }
         }).catch(err => {
           reject(err)

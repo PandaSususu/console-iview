@@ -1,7 +1,7 @@
 <template>
   <Modal
     v-model="isShow"
-    title="修改用户信息"
+    title="添加用户"
     :loading="loading"
     @on-ok="ok"
     @on-cancel="cancel"
@@ -12,15 +12,29 @@
       :rules="ruleValidate"
       :label-width="80"
     >
+      <FormItem label="登录邮箱" prop="email">
+        <Input v-model="formData.email" placeholder="请输入登录邮箱"></Input>
+      </FormItem>
+      <FormItem label="密码" prop="password">
+        <Input
+          v-model="formData.password"
+          type="password"
+          placeholder="请输入密码"
+        ></Input>
+      </FormItem>
+      <FormItem label="确认密码" prop="repeatPassword">
+        <Input
+          v-model="formData.repeatPassword"
+          type="password"
+          placeholder="请再次输入密码"
+        ></Input>
+      </FormItem>
       <FormItem label="用户名" prop="name">
         <Input v-model="formData.name" placeholder="请输入用户名"></Input>
       </FormItem>
-      <FormItem label="邮箱" prop="email">
-        <Input v-model="formData.email" placeholder="请输入登录邮箱"></Input>
+      <FormItem label="手机号">
+        <Input v-model="formData.mobile" placeholder="请输入手机号码"></Input>
       </FormItem>
-      <!-- <FormItem label="密码" prop="name">
-        <Input v-model="data.password" placeholder="请输入密码"></Input>
-      </FormItem> -->
       <FormItem label="状态">
         <RadioGroup v-model="formData.status">
           <Radio label="0">正常</Radio>
@@ -83,10 +97,7 @@ const favPassCheck = (rule, value, callback) => {
 }
 
 // 校验修改后的用户名是否存在
-const checkUserName = (rule, value, callback, vm) => {
-  if (value === vm.currentData.name) {
-    return callback()
-  }
+const checkUserName = (rule, value, callback) => {
   checkName(value).then(res => {
     if (!res.data) {
       return callback()
@@ -97,10 +108,7 @@ const checkUserName = (rule, value, callback, vm) => {
 }
 
 // 校验修改后的邮箱是否存在
-const checkUserEmail = (rule, value, callback, vm) => {
-  if (value === vm.currentData.email) {
-    return callback()
-  }
+const checkUserEmail = (rule, value, callback) => {
   checkEmail(value).then(res => {
     if (!res.data) {
       return callback()
@@ -115,10 +123,6 @@ export default {
     show: {
       type: Boolean,
       default: false
-    },
-    currentData: {
-      type: Object,
-      default: () => {}
     }
   },
   computed: {
@@ -127,11 +131,6 @@ export default {
         return this.show
       },
       set() {}
-    }
-  },
-  watch: {
-    currentData(newValu, oldVal) {
-      this.formData = Object.assign({}, newValu)
     }
   },
   data() {
@@ -186,7 +185,19 @@ export default {
           ]
         }
       ],
-      formData: {},
+      formData: {
+        email: '',
+        password: '',
+        repeatPassword: '',
+        name: '',
+        mobile: '',
+        status: '0',
+        isVip: '0',
+        favs: 100,
+        location: [],
+        gender: '',
+        regmark: ''
+      },
       ruleValidate: {
         name: [
           { required: true, message: '用户名不能为空', trigger: 'blur' },
@@ -204,7 +215,7 @@ export default {
           },
           {
             validator: (rule, value, callback) => {
-              checkUserName(rule, value, callback, this)
+              checkUserName(rule, value, callback)
             },
             trigger: 'blur'
           }
@@ -218,12 +229,39 @@ export default {
           },
           {
             validator: (rule, value, callback) => {
-              checkUserEmail(rule, value, callback, this)
+              checkUserEmail(rule, value, callback)
             },
             trigger: 'blur'
           }
         ],
-        favs: [{ validator: favPassCheck, trigger: 'blur' }]
+        favs: [{ validator: favPassCheck, trigger: 'blur' }],
+        password: [
+          { required: true, message: '密码不能为空', trigger: 'blur' },
+          {
+            type: 'string',
+            min: 6,
+            message: '密码必须至少有6个字符',
+            trigger: 'blur'
+          },
+          {
+            type: 'string',
+            max: 16,
+            message: '密码不能超过16个字符',
+            trigger: 'blur'
+          }
+        ],
+        repeatPassword: [
+          { required: true, message: '确认密码不能为空', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (value === this.formData.password) {
+                return callback()
+              }
+              return callback(new Error('确认密码不匹配'))
+            },
+            trigger: 'blur'
+          }
+        ]
       },
       loading: true
     }
@@ -233,7 +271,20 @@ export default {
       this.$refs.formValidate.validate(valid => {
         if (valid) {
           this.loading = false
+          Reflect.deleteProperty(this.formData, 'repeatPassword')
           this.$emit('okModel', this.formData)
+          this.formData = {
+            email: '',
+            password: '',
+            name: '',
+            mobile: '',
+            status: '0',
+            isVip: '0',
+            favs: 100,
+            location: [],
+            gender: '',
+            regmark: ''
+          }
         } else {
           this.$Message.error('请检查输入数据')
           this.loading = false
