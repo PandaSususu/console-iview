@@ -8,6 +8,7 @@
         search-place="top"
         v-model="tableData"
         :columns="columns"
+        @on-search="handleSearch"
       />
       <Page
         :total="total"
@@ -50,13 +51,17 @@ export default {
           align: 'center',
           render: (h, params) => {
             return h('span', (this.page - 1) * this.limit + (params.index + 1))
-          }
+          },
+          hidden: true
         },
         {
           title: '标题',
           key: 'title',
           width: 300,
-          tooltip: true
+          tooltip: true,
+          control: {
+            type: 'input'
+          }
         },
         {
           title: '发帖时间',
@@ -68,6 +73,9 @@ export default {
               'span',
               moment(params.row.created).format('YYYY-MM-DD HH:mm:ss')
             )
+          },
+          control: {
+            type: 'date'
           }
         },
         {
@@ -77,6 +85,9 @@ export default {
           align: 'center',
           render: (h, params) => {
             return h('span', params.row.user.name)
+          },
+          control: {
+            type: 'input'
           }
         },
         {
@@ -86,13 +97,67 @@ export default {
           align: 'center',
           render: (h, params) => {
             return h('span', this.catalogs[params.row.catalog])
+          },
+          control: {
+            type: 'select',
+            options: [
+              {
+                key: 'index',
+                label: '全部'
+              },
+              {
+                key: 'ask',
+                label: '提问'
+              },
+              {
+                key: 'advise',
+                label: '建议'
+              },
+              {
+                key: 'discuss',
+                label: '交流'
+              },
+              {
+                key: 'share',
+                label: '分享'
+              },
+              {
+                key: 'news',
+                label: '动态'
+              }
+            ]
           }
         },
         {
           title: '积分',
           key: 'fav',
           width: 60,
-          align: 'center'
+          align: 'center',
+          control: {
+            type: 'select',
+            options: [
+              {
+                key: '20',
+                label: '20'
+              },
+              {
+                key: '30',
+                label: '30'
+              },
+              {
+                key: '50',
+                label: '50'
+              },
+              {
+                key: '60',
+                label: '60'
+              },
+              {
+                key: '80',
+                label: '80'
+              }
+            ]
+          }
         },
         {
           title: '结贴',
@@ -101,19 +166,34 @@ export default {
           width: 60,
           render: (h, params) => {
             return h('span', params.row.isEnd === '0' ? '未结' : '已结 ')
+          },
+          control: {
+            type: 'radio',
+            options: [
+              {
+                title: '未结',
+                label: '0'
+              },
+              {
+                title: '已结',
+                label: '1'
+              }
+            ]
           }
         },
         {
           title: '阅读数',
           key: 'reads',
           width: 100,
-          align: 'center'
+          align: 'center',
+          hidden: true
         },
         {
           title: '评论数',
           key: 'answer',
           align: 'center',
-          width: 100
+          width: 100,
+          hidden: true
         },
         {
           title: '状态',
@@ -129,6 +209,19 @@ export default {
                 innerHTML: params.row.status === '0' ? 'on' : 'off'
               }
             })
+          },
+          control: {
+            type: '回复状态',
+            options: [
+              {
+                title: '打开',
+                label: '0'
+              },
+              {
+                title: '关闭',
+                label: '1'
+              }
+            ]
           }
         },
         {
@@ -144,6 +237,19 @@ export default {
                 size: 20
               }
             })
+          },
+          control: {
+            type: 'radio',
+            options: [
+              {
+                title: '未置顶',
+                label: '0'
+              },
+              {
+                title: '置顶',
+                label: '1'
+              }
+            ]
           }
         },
         {
@@ -154,7 +260,8 @@ export default {
           tooltip: true,
           render: (h, params) => {
             return h('span', params.row.tags.map(item => item.name).join('，'))
-          }
+          },
+          hidden: true
         },
         {
           title: '设置',
@@ -194,7 +301,8 @@ export default {
                 'Delete'
               )
             ])
-          }
+          },
+          hidden: true
         }
       ],
       tableData: [],
@@ -242,6 +350,11 @@ export default {
         }
       })
     },
+    handleSearch(options) {
+      console.log(options)
+      this.page = 1
+      this._getList(options)
+    },
     cancelModel() {
       this.isShow = false
       this.$Message.info('取消编辑')
@@ -260,10 +373,11 @@ export default {
         }
       })
     },
-    _getList() {
+    _getList(options) {
       getList({
         page: this.page - 1,
-        limit: this.limit
+        limit: this.limit,
+        options: options || {}
       }).then(res => {
         if (res.code === 10000) {
           this.tableData = res.data

@@ -4,7 +4,7 @@ import qs from 'qs'
 
 // 获取帖子列表
 const getList = (options) => {
-  return axios.get('/public/list?' + qs.stringify(options))
+  return axios.post('/post/post-list', options)
 }
 
 // 删除帖子

@@ -6,7 +6,7 @@ import axios from '@/libs/api.request'
 const getInfo = async () => axios.get('/user/info')
 
 // 获取用户列表
-const getUsers = async (options) => axios.get('/user/list?' + qs.stringify(options))
+const getUsers = async (options) => axios.post('/user/list', options)
 
 // 删除用户
 const deleteUser = async (ids) => axios.post('/user/delete', ids)

@@ -9,6 +9,7 @@
         v-model="tableData"
         :columns="columns"
         @on-selection-change="handleSelected"
+        @on-search="handleSearch"
       >
         <template v-slot:add-user>
           <Button class="search-btn" type="primary" @click="addShow = true"
@@ -100,7 +101,8 @@ export default {
           type: 'selection',
           width: 60,
           align: 'center',
-          key: 'selection'
+          key: 'selection',
+          hidden: true
         },
         {
           title: '序号',
@@ -109,18 +111,25 @@ export default {
           align: 'center',
           render: (h, params) => {
             return h('span', (this.page - 1) * this.limit + (params.index + 1))
-          }
+          },
+          hidden: true
         },
         {
           title: '用户名',
           key: 'name',
-          width: 100
+          width: 100,
+          control: {
+            type: 'input'
+          }
         },
         {
           title: '邮箱',
           key: 'email',
           width: 200,
-          align: 'center'
+          align: 'center',
+          control: {
+            type: 'input'
+          }
         },
         {
           title: '注册时间',
@@ -132,13 +141,17 @@ export default {
               'span',
               moment(params.row.created).format('YYYY-MM-DD HH:mm:ss')
             )
+          },
+          control: {
+            type: 'date'
           }
         },
         {
           title: '积分',
           key: 'favs',
           width: 60,
-          align: 'center'
+          align: 'center',
+          hidden: true
         },
         {
           title: '性别',
@@ -154,6 +167,19 @@ export default {
                   : '女'
                 : '未设置'
             )
+          },
+          control: {
+            type: 'radio',
+            options: [
+              {
+                title: '男',
+                label: '0'
+              },
+              {
+                title: '女',
+                label: '1'
+              }
+            ]
           }
         },
         {
@@ -162,7 +188,29 @@ export default {
           width: 200,
           align: 'center',
           render: (h, params) => {
-            return h('span', params.row.access.map(item => item).join('，'))
+            const rules = {
+              user: '普通用户',
+              admin: '管理员',
+              super_admin: '超级管理员'
+            }
+            return h('span', params.row.access.map(item => rules[item]).join('，'))
+          },
+          control: {
+            type: 'select',
+            options: [
+              {
+                key: 'user',
+                label: '普通用户'
+              },
+              {
+                key: 'admin',
+                label: '管理员'
+              },
+              {
+                key: 'super_admin',
+                label: '超级管理员'
+              }
+            ]
           }
         },
         {
@@ -179,6 +227,23 @@ export default {
                 innerHTML: params.row.status === '0' ? '正常' : '异常'
               }
             })
+          },
+          control: {
+            type: 'radio',
+            options: [
+              {
+                title: '正常',
+                label: '0'
+              },
+              {
+                title: '禁言',
+                label: '1'
+              },
+              {
+                title: '冻结',
+                label: '2'
+              }
+            ]
           }
         },
         {
@@ -186,7 +251,8 @@ export default {
           key: 'regmark',
           width: 200,
           align: 'center',
-          tooltip: true
+          tooltip: true,
+          hidden: true
         },
         {
           title: '所在城市',
@@ -200,7 +266,8 @@ export default {
                 ? params.row.location.join('/')
                 : '未设置'
             )
-          }
+          },
+          hidden: true
         },
         {
           title: '会员',
@@ -212,7 +279,8 @@ export default {
               'span',
               parseInt(params.row.isVip) ? 'VIP ' + params.row.isVip : '非会员'
             )
-          }
+          },
+          hidden: true
         },
         {
           title: '设置',
@@ -252,7 +320,8 @@ export default {
                 'Delete'
               )
             ])
-          }
+          },
+          hidden: true
         }
       ],
       tableData: [],
@@ -323,10 +392,11 @@ export default {
         }
       })
     },
-    _getList() {
+    _getList(options) {
       getUsers({
         page: this.page - 1,
-        limit: this.limit
+        limit: this.limit,
+        options: options || {}
       }).then(res => {
         if (res.code === 10000) {
           this.tableData = res.data
@@ -434,6 +504,16 @@ export default {
         this.$Message.info('您没有设置任何内容')
         this.batchShow = false
       }
+    },
+    handleSearch(options) {
+      for (let key in options) {
+        if (!options[key]) {
+          this.$Message.info('请输入搜索内容')
+          return
+        }
+      }
+      this.page = 1
+      this._getList(options)
     }
   },
   mounted() {
