@@ -12,7 +12,8 @@ export default {
   props: {
     value: Array,
     text: String,
-    subtext: String
+    subtext: String,
+    name: String
   },
   data () {
     return {
@@ -47,6 +48,7 @@ export default {
             type: 'pie',
             radius: '55%',
             center: ['50%', '60%'],
+            name: this.name,
             data: this.value,
             itemStyle: {
               emphasis: {

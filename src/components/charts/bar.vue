@@ -14,17 +14,17 @@ export default {
     text: String,
     subtext: String
   },
-  data () {
+  data() {
     return {
       dom: null
     }
   },
   methods: {
-    resize () {
+    resize() {
       this.dom.resize()
     }
   },
-  mounted () {
+  mounted() {
     this.$nextTick(() => {
       let xAxisData = Object.keys(this.value)
       let seriesData = Object.values(this.value)
@@ -39,19 +39,22 @@ export default {
           data: xAxisData
         },
         yAxis: {
-          type: 'value'
+          type: 'value',
+          minInterval: 1
         },
-        series: [{
-          data: seriesData,
-          type: 'bar'
-        }]
+        series: [
+          {
+            data: seriesData,
+            type: 'bar'
+          }
+        ]
       }
       this.dom = echarts.init(this.$refs.dom, 'tdTheme')
       this.dom.setOption(option)
       on(window, 'resize', this.resize)
     })
   },
-  beforeDestroy () {
+  beforeDestroy() {
     off(window, 'resize', this.resize)
   }
 }
