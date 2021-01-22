@@ -81,7 +81,8 @@ export default {
       ],
       yAxis: [
         {
-          type: 'value'
+          type: 'value',
+          minInterval: 1
         }
       ],
       series: [

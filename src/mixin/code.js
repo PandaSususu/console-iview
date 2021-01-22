@@ -16,7 +16,7 @@ export default {
         this.sid = localSid
       } else {
         this.sid = uuidv4()
-        localStorage.setItem('sid', sid)
+        localStorage.setItem('sid', this.sid)
       }
       getCode(this.sid).then(res => {
         if (res.code === 10000) {
