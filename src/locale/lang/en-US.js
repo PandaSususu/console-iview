@@ -47,5 +47,7 @@ export default {
   article_content_page: 'Content Manage',
   article_label_page: 'Label Manage',
   user_manage: 'User Manage',
-  user_page: 'User Manage'
+  user_page: 'User Manage',
+  error_manage: 'Error Manage',
+  error_page: 'Error Manage'
 }

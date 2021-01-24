@@ -59,7 +59,7 @@ import CountTo from '_c/count-to'
 import { ChartPie, ChartBar } from '_c/charts'
 import Column from './column.vue'
 
-import { homeCount } from '@/api/count'
+import { homeCount } from '@/api/admin'
 export default {
   name: 'home',
   components: {

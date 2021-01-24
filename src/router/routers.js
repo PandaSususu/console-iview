@@ -1,7 +1,6 @@
 import Main from '@/components/main'
 import parentView from '@/components/parent-view'
-import atricleManageRouters from './atricle-manage'
-import userManageRouters from './user-manage'
+import manageRouters from './manage'
 
 /**
  * iview-admin中meta除了原生参数外可配置的参数:
@@ -52,8 +51,7 @@ export default [
       }
     ]
   },
-  ...atricleManageRouters,
-  ...userManageRouters,
+  ...manageRouters,
   {
     path: '',
     name: 'doc',
